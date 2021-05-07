@@ -32,7 +32,8 @@ async function runIPFSFetcher() {
       let image = data.image;
       
 
-      dbo.insertIntoDB(name, material, color, multiplier, type, image);
+      dbo.insertInDB(name, material, color, multiplier, type, image);
+      dbo.printEverything();
 
 
       if(!materialValues.includes(data.attributes[0].value))

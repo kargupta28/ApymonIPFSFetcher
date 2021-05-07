@@ -6,7 +6,9 @@
 // that the calling function can use. 
 
 module.exports = {
-  insertIntoDB: insertIntoDB
+  insertIntoDB: insertInDB,
+  printEverything: printEverything,
+  deleteEverything: deleteEverything
 }
 
 // using a Promises-wrapped version of sqlite3
@@ -24,10 +26,27 @@ const multiplierDB = "select * from ApymonData where multiplier=?";
 const typeDB = "select * from ApymonData where type=?";
 
 // Insert into db
-async function insertIntoDB(name, material, color, multiplier, type, image) {
+async function insertInDB(name, material, color, multiplier, type, image) {
   try {
     await db.run(insertDB, [name, material, color, multiplier, type, image]);
+    console.log("inserted!");
   } catch (error) {
     console.log("Error:", error);
   }
+}
+
+
+
+// ----------------------------------------------------
+
+// empty all data from db
+async function printEverything() {
+  let result = await db.all("select * from ApymonData",);
+  console.log(result);
+}
+
+// empty all data from db
+ async function deleteEverything() {
+  await db.run("delete from ApymonData");
+  db.run("vacuum");
 }

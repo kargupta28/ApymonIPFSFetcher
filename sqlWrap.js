@@ -12,7 +12,7 @@ const db = new sql.Database("apymon.db");
 const traitTable = new sql.Database("traittable.db");
 
 // check if database exists
-let cmd = " SELECT name FROM sqlite_master WHERE type='table' AND name='traitTable' ";
+let cmd = " SELECT name FROM sqlite_master WHERE type='table' AND name='ApymonData' ";
 
 db.get(cmd, function (err, val) {
   if (val == undefined) {
@@ -24,9 +24,9 @@ db.get(cmd, function (err, val) {
 });
 
 // check if database exists
-let cmd = " SELECT name FROM sqlite_master WHERE type='table' AND name='UniqueTrait' ";
+let cmd2 = " SELECT name FROM sqlite_master WHERE type='table' AND name='TraitTable' ";
 
-db.get(cmd, function (err, val) {
+db.get(cmd2, function (err, val) {
   if (val == undefined) {
         console.log("No database file - creating one");
         createTraitTable();
@@ -68,12 +68,6 @@ function createTraitTable() {
 db.run = util.promisify(db.run);
 db.get = util.promisify(db.get);
 db.all = util.promisify(db.all);
-
-// empty all data from db
-db.deleteEverything = async function() {
-  await db.run("delete from ApymonData");
-  db.run("vacuum");
-}
 
 // allow code in index.js to use the db object
 module.exports = db;
