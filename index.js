@@ -3,6 +3,7 @@
 // A static server using Node and Express
 const express = require("express");
 const app = express();
+const fs = require('fs');
 
 // instead of older body-parser 
 app.use(express.json());
@@ -17,140 +18,62 @@ app.get("/", (request, response) => {
 
 // -------------------------------------------------
 
-app.get("/materialValues", (request, response) => {
-  response.send({
-    data: materialValues
-  });
-});
-
-app.get("/colorValues", (request, response) => {
-  response.send({
-    data: colorValues
-  });
-});
-
-app.get("/multiplierValues", (request, response) => {
-  response.send({
-    data: multiplierValues
-  });
-});
-
-app.get("/typeValues", (request, response) => {
-  response.send({
-    data: typeValues
-  });
-});
-
-// -------------------------------------------------
-app.post("/getUniqueData", (request, response, next) => {
-  console.log(request.body);
-  let dataToCheck = allData;
-
-  for(let i=0; i<request.body.length; i++) {
-    dataToCheck = getUniqueData(request.body[i][0], request.body[i][1], dataToCheck);
-  }
-
-  response.send({
-    data: dataToCheck
-  });
-});
-
-
-function getUniqueData(trait_type, trait_value, dataArray) {
-  if(trait_value == 'Any') return dataArray;
-
-  let uniqueData = [];
-  let attributeLoc = 0;
-
-  switch(trait_type) {
-    case 'Material':
-      attributeLoc = 0;
-      break;
-    case 'Color':
-      attributeLoc = 1;
-      break;
-    case 'Multiplier':
-      attributeLoc = 2;
-      break;
-    case 'Type':
-      attributeLoc = 3;
-  }
-
-  for(let i=0; i<dataArray.length; i++) {
-    if(dataArray[i].attributes[attributeLoc].value == trait_value) {
-      uniqueData.push(dataArray[i]);
-    }
-  }
-
-  return uniqueData;
-}
-
-// -------------------------------------------------
-
 const fetch = require("node-fetch");
 
-const checkFrom = 0;
-const checkTill = 6399;
-const ipfsLink = 'http://gateway.pinata.cloud/ipfs/QmSoDY8mYaQAQtQ9UGoMpHN3tHSs8d91Uqy988rWocQYKd/';
-let allData = [];
-let materialValues = [];
-let colorValues = [];
-let multiplierValues = [];
-let typeValues = [];
-let dataReady = false;
+const url = 'https://galaxy.staratlas.com/nfts';
+const tokenMints = [
+    {'name': 'POLIS',
+     'address': 'poLisWXnNRwC6oBu1vHiuKQzFjGL4XDSu4g9qjz9qVk'},
+    {'name': 'ATLAS',
+     'address': 'ATLASXmbPQxBUYbxPsV97usA3fPQYEqzQBUHgiFCUsXx'},
+    {'name': 'USDC',
+     'address': 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'},
+    {'name': 'PILOT',
+     'address': 'BswdGxfurGpSKPPhHUP6d9uzdY3bAG8o3CJnFUQLanzw'},
+    {'name': 'CAPN',
+     'address': 'HzeBiGCyGESHS3d5ndQmvz7q7Nz8Py6PV5xFjRL4cQGk'},
+    {'name': 'PASS',
+     'address': '9iHQcYQR3qfqUh1HsTvRu2K1QZSCW3M6DXCY7HcwFGJn'}
+];
+const markets = [];
 
-runIPFSFetcher();
+fetchNFTs();
 
-async function runIPFSFetcher() {
-
-  for(let i=checkFrom; i<=checkTill; i++) {
-    await fetchIPFSData(i)
-    .then(data => {
-      allData.push(data);
-
-      if(!materialValues.includes(data.attributes[0].value))
-        materialValues.push(data.attributes[0].value);
-      if(!colorValues.includes(data.attributes[1].value))
-        colorValues.push(data.attributes[1].value);
-      if(!multiplierValues.includes(data.attributes[2].value))
-        multiplierValues.push(data.attributes[2].value);
-      if(!typeValues.includes(data.attributes[3].value))
-        typeValues.push(data.attributes[3].value);
-    });
-
-    console.log("Apymon Egg #", i, ", checked!");
-  }
-
-  dataReady = true;
-  
-  //printAllData();
-  //printUniqueData('Type', 'LEGENDARY');
-}
-
-function fetchIPFSData(number) {
-  return new Promise((resolve, reject) => {
-    let string = ipfsLink + number;
-
-    fetch(string)
+async function fetchNFTs() {
+  await fetch(url)
     .then(res => res.json())
       .then(data => {
-        try {
-          resolve(data);
-        } catch (err) {
-          console.error("Error:", err);
-          console.error("Data body:", data);
+        for(var i=0; i<data.length; i++) {
+          var symbolName = data[i].symbol;
+          var symbolAddress = data[i].mint;
+
+          if(symbolName == 'FM-T3A') {
+            if(data[i]._id == '6143e0ac92761eeee4bc18f8')
+              symbolName = 'FM-T3ANI'
+            else
+              symbolName = 'FM-T3ATLAS'
+
+          }
+
+          tokenMints.push({
+            name: symbolName,
+            address: symbolAddress
+          });
         }
-      })
-  })
+      });
+
+  console.log(tokenMints);
+
+  var tokenMintsJson = JSON.stringify(tokenMints, null, 4)
+
+  fs.writeFile('token-mints.json', tokenMintsJson, 'utf8', (err)=>{
+            if(err){
+                console.log(err)
+            }
+        })
 }
 
-// -------------------------------------------------
 
-function printAllData() {
-  for(let i=0; i<allData.length; i++) {
-    console.log(allData[i]);
-  }
-}
 
 // -------------------------------------------------
 
