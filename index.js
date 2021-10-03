@@ -21,6 +21,8 @@ app.get("/", (request, response) => {
 const fetch = require("node-fetch");
 
 const url = 'https://galaxy.staratlas.com/nfts';
+const programId = '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin';
+
 const tokenMints = [
     {'name': 'POLIS',
      'address': 'poLisWXnNRwC6oBu1vHiuKQzFjGL4XDSu4g9qjz9qVk'},
@@ -44,29 +46,44 @@ async function fetchNFTs() {
     .then(res => res.json())
       .then(data => {
         for(var i=0; i<data.length; i++) {
-          var symbolName = data[i].symbol;
-          var symbolAddress = data[i].mint;
+          var tokenName = data[i].symbol;
+          var tokenAddress = data[i].mint;
+          var tokenMarketAddress = data[i].markets[0].id; // There can be multiple markets, change here in the future
 
-          if(symbolName == 'FM-T3A') {
+          if(tokenName == 'FM-T3A') {
             if(data[i]._id == '6143e0ac92761eeee4bc18f8')
-              symbolName = 'FM-T3ANI'
+              tokenName = 'FM-T3ANI'
             else
-              symbolName = 'FM-T3ATLAS'
-
+              tokenName = 'FM-T3ATLAS'
           }
 
           tokenMints.push({
-            name: symbolName,
-            address: symbolAddress
+            name: tokenName,
+            address: tokenAddress
           });
+
+          markets.push({
+            address: tokenMarketAddress,
+            deprecated: false,
+            name: tokenName,
+            programId: programId
+          })
         }
       });
 
-  console.log(tokenMints);
+  console.log(markets);
 
   var tokenMintsJson = JSON.stringify(tokenMints, null, 4)
 
   fs.writeFile('token-mints.json', tokenMintsJson, 'utf8', (err)=>{
+            if(err){
+                console.log(err)
+            }
+        })
+
+  var marketsJson = JSON.stringify(markets, null, 4)
+
+  fs.writeFile('markets.json', marketsJson, 'utf8', (err)=>{
             if(err){
                 console.log(err)
             }
