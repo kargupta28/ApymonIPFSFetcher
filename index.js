@@ -39,7 +39,7 @@ const tokenMints = [
 ];
 const markets = [];
 
-fetchNFTs();
+// fetchNFTs();
 
 async function fetchNFTs() {
   await fetch(url)
@@ -88,9 +88,57 @@ async function fetchNFTs() {
                 console.log(err)
             }
         })
+
 }
 
 
+
+// -------------------------------------------------
+
+var submenus = `import { Menu } from 'antd';
+import React from 'react';
+
+
+export default function DynamicMenu() {
+    return (
+<>
+`
+
+const set = (obj, path, val) => { 
+    const keys = path.split('.');
+    const lastKey = keys.pop();
+    const lastObj = keys.reduce((obj, key) => 
+        obj[key] = obj[key] || {}, 
+        obj); 
+    lastObj[lastKey] = val;
+};
+
+var submenuArray = {};
+
+buildSubmenus();
+
+async function buildSubmenus() {
+  await fetch(url)
+    .then(res => res.json())
+      .then(data => {
+        data.map(function(nft) {
+          var key = ''+nft.attributes.itemType+'.'+nft.attributes.class+'.'+nft.markets[0].id; // fix this "markets[0]" dependency
+          var value = nft.name + " | " + nft.symbol;
+          set(submenuArray, key, value);
+        });
+        console.log(submenuArray);
+      });
+
+  var subMenusJson = JSON.stringify(submenuArray, null, 4)
+
+  fs.writeFile('submenus.json', subMenusJson, 'utf8', (err)=>{
+            if(err){
+                console.log(err)
+            }
+        })
+}
+
+console.log(submenus);
 
 // -------------------------------------------------
 
