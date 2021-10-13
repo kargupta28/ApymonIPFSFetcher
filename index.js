@@ -91,13 +91,10 @@ async function fetchNFTs() {
 
 }
 
-
-
 // -------------------------------------------------
 
-var submenus = `import { Menu } from 'antd';
+var submenuFile = `import { Menu } from 'antd';
 import React from 'react';
-
 
 export default function DynamicMenu() {
     return (
@@ -122,23 +119,33 @@ async function buildSubmenus() {
     .then(res => res.json())
       .then(data => {
         data.map(function(nft) {
-          var key = ''+nft.attributes.itemType+'.'+nft.attributes.class+'.'+nft.markets[0].id; // fix this "markets[0]" dependency
+          var key = nft.attributes.itemType+"."+nft.attributes.class+"."+nft.markets[0].id; // fix this "markets[0]" dependency
           var value = nft.name + " | " + nft.symbol;
           set(submenuArray, key, value);
         });
-        console.log(submenuArray);
       });
+  
+  for(var category in submenuArray) {
+    submenuFile += "\t<Menu.SubMenu title=\""+category+"\">\n";
+    for(var type in submenuArray[category]) {
+      submenuFile += "\t\t<Menu.ItemGroup title=\""+type+"\">\n";
+      for(var token in submenuArray[category][type]) {
+        submenuFile += "\t\t\t<Menu.Item key=\""+token+"\">"+submenuArray[category][type][token]+"</Menu.Item>\n";
+      }
+      submenuFile += "\t\t</Menu.ItemGroup>\n";
+    }
+    submenuFile += "\t</Menu.SubMenu>\n";
+  }
 
-  var subMenusJson = JSON.stringify(submenuArray, null, 4)
+  submenuFile += "</>\n)};"
 
-  fs.writeFile('submenus.json', subMenusJson, 'utf8', (err)=>{
+    fs.writeFile('Submenus.tsx.txt', submenuFile, 'utf8', (err)=>{
             if(err){
                 console.log(err)
             }
         })
-}
 
-console.log(submenus);
+}
 
 // -------------------------------------------------
 
